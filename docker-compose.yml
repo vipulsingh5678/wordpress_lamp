@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  mySQLcontained:
+    image: mysql:8.0
+    volumes:
+     - ./LAMPcontained/mysql_data:/var/lib/mysql
+   
+    restart: always
+    environment:
+     - MYSQL_ROOT_PASSWORD=mysqlpwd
+     - MYSQL_DATABASE=wordpressdb
+     - MYSQL_USER=wordpressuser
+     - MYSQL_PASSWORD=password
+    ports:
+     - 3306:3306
+  
+  websrv:
+    build: ./LAMPcontained
+    volumes:
+     - ./LAMPcontained/data:/var/www/html
+    ports:
+     - 80:80
+    links:
+     - mySQLcontained
+    depends_on:
+     - mySQLcontained
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: PMAcontained
+    environment:
+     - PMA_HOST=mySQLcontained
+     - MYSQL_ROOT_PASSWORD=mysqlpwd
+     - PMA_PORT=3306
+    ports:
+     - 8081:80
+  wordpress:
+    depends_on:
+     - mySQLcontained
+    image: wordpress:latest
+    volumes:
+     - ./LAMPcontained/wordpress_data:/var/www/html
+    ports:
+     - 8082:80
+    restart: always
+  #  environment:
+ #     WORDPRESS_DB_USER=wordpressuser
+#      WORDPRESS_DB_PASSWORD=password
